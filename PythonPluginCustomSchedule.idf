@@ -74,7 +74,7 @@
     Yes,                     !- Do System Sizing Calculation
     Yes,                     !- Do Plant Sizing Calculation
     Yes,                     !- Run Simulation for Sizing Periods
-    No,                      !- Run Simulation for Weather File Run Periods
+    Yes,                      !- Run Simulation for Weather File Run Periods
     No,                      !- Do HVAC Sizing Simulation for Sizing Periods
     1;                       !- Maximum Number of HVAC Sizing Simulation Passes
 
@@ -6120,8 +6120,6 @@
     Heating:Electricity,     !- Variable or Meter 8 Name
     Maximum;                 !- Aggregation Type for Variable or Meter 8
 
-  Output:Variable,*,Zone Mean Air Temperature,timestep;
-
   Output:EnergyManagementSystem,
     Verbose,                 !- Actuator Availability Dictionary Reporting
     Verbose,                 !- Internal Variable Availability Dictionary Reporting
@@ -6129,27 +6127,60 @@
 
 !###################################
 
+  Schedule:Constant ,
+    AlwaysOn , !- Name
+    On/Off , !- Schedule Type Limits Name
+    1.0; !- Hourly Value
+
+  OtherEquipment,
+    OTHEQ_SENSIBLE, !- Name
+    , !- Fuel Use Type
+    Perimeter_ZN_4, !- Zone or ZoneList or Space or SpaceList Name
+    ALWAYSON , !- SCHEDULE Name
+    EquipmentLevel , !- Design Level calculation method
+    0, !- Design Level {W}
+    , !- Power per Zone Floor Area {watts/m2}
+    , !- Power per Person {watts/person}
+    0, !- Fraction Latent
+    , !- Fraction Radiant
+    0, !- Fraction Lost
+    0, !- Carbon Dioxide Generation Rate
+    ; !- End -Use Subcategory
+
+  OtherEquipment,
+    OTHEQ_LATENT, !- Name
+    , !- Fuel Use Type
+    Perimeter_ZN_4, !- Zone or ZoneList or Space or SpaceList Name
+    ALWAYSON , !- SCHEDULE Name
+    EquipmentLevel , !- Design Level calculation method
+    0, !- Design Level {W}
+    , !- Power per Zone Floor Area {watts/m2}
+    , !- Power per Person {watts/person}
+    1, !- Fraction Latent
+    , !- Fraction Radiant
+    0, !- Fraction Lost
+    0, !- Carbon Dioxide Generation Rate
+    ; !- End -Use Subcategory
+
+  Output:Variable,Perimeter_ZN_4,Zone Air Temperature,timestep;
+  Output:Variable,Perimeter_ZN_4,Zone Air Humidity Ratio,timestep;
+
   Schedule:Constant,HTGSETP_SCH,Temperature,21.0;
 
   Schedule:Constant,CLGSETP_SCH,Temperature,24.0;
 
+  PythonPlugin:SearchPaths,
+    AddPath,
+    Yes,
+    Yes,
+    Yes,
+    C:\Users\Gilbert\.conda\envs\Doc_Art2\Lib\site-packages;
+
   PythonPlugin:Instance,
     Heating Setpoint Override,  !- Name
     Yes,                     !- Run During Warmup Days
-    PythonPluginCustomSchedule,  !- Python Module Name
-    HeatingSetPoint;         !- Plugin Class Name
-
-  PythonPlugin:Instance,
-    Cooling Setpoint Override,  !- Name
-    Yes,                     !- Run During Warmup Days
-    PythonPluginCustomSchedule,  !- Python Module Name
-    CoolingSetPoint;         !- Plugin Class Name
-
-  PythonPlugin:Instance,
-    Average Building Temperature,  !- Name
-    Yes,                     !- Run During Warmup Days
-    PythonPluginCustomSchedule,  !- Python Module Name
-    AverageZoneTemps;        !- Plugin Class Name
+    main,  !- Python Module Name
+    type205;         !- Plugin Class Name
 
   PythonPlugin:Variables,
     MyGlobals,               !- Name
@@ -6161,10 +6192,4 @@
     Averaged,                !- Type of Data in Variable
     ZoneTimestep,            !- Update Frequency
     C;                       !- Units
-
-  Output:Variable,Averaged Building Temperature,PythonPlugin:OutputVariable,Timestep;
-
-  Output:Variable,HTGSETP_SCH,Schedule Value,timestep;
-
-  Output:Variable,CLGSETP_SCH,Schedule Value,timestep;
 
