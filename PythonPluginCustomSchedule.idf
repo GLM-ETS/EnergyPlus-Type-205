@@ -73,7 +73,7 @@
     Yes,                     !- Do Zone Sizing Calculation
     Yes,                     !- Do System Sizing Calculation
     Yes,                     !- Do Plant Sizing Calculation
-    Yes,                     !- Run Simulation for Sizing Periods
+    No,                     !- Run Simulation for Sizing Periods
     Yes,                      !- Run Simulation for Weather File Run Periods
     No,                      !- Do HVAC Sizing Simulation for Sizing Periods
     1;                       !- Maximum Number of HVAC Sizing Simulation Passes
@@ -83,8 +83,8 @@
     1,                       !- Begin Month
     1,                       !- Begin Day of Month
     ,                        !- Begin Year
-    12,                      !- End Month
-    31,                      !- End Day of Month
+    1,                      !- End Month
+    1,                      !- End Day of Month
     ,                        !- End Year
     Sunday,                  !- Day of Week for Start Day
     No,                      !- Use Weather File Holidays and Special Days
@@ -6163,7 +6163,7 @@
     ; !- End -Use Subcategory
 
   Output:Variable,Perimeter_ZN_4,Zone Air Temperature,timestep;
-  Output:Variable,Perimeter_ZN_4,Zone Air Humidity Ratio,timestep;
+  Output:Variable,Perimeter_ZN_4,Zone Air Relative Humidity,timestep;
 
   Schedule:Constant,HTGSETP_SCH,Temperature,21.0;
 
