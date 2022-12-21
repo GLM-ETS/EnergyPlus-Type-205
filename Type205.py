@@ -4,10 +4,10 @@ def Type205(self, state, T_a, RH, **kwargs):
     # RH = 20  # Relative humidity [-]
 
     P_LED = 120  # Total LED Power [W]
-    A_gr = 20  # Floor area [m^2]
+    A_gr = kwargs["area"]  # Floor area [m^2]
     LAI = kwargs["LAI"]  # LeafAreaIndex [m^2_leaves/m^2_cultivated area]
     CAC = kwargs["CAC"]  # Coverage of the floor of the cultivated area [-]
-    Afv = 0.1  # Cultivated fraction [-]
+    Afv = 1  # Cultivated fraction [-]
     rho_v = 0.05  # Lettuce relfectivity [-]
     LED_eff = 0.52  # LED efficiency [-]
 
@@ -50,34 +50,34 @@ def Type205(self, state, T_a, RH, **kwargs):
     # -----------------------------------------------------------------------------------------------------------------------
 
     if Afv < 0 or Afv > 10:
-        self.api.runtime_issue_severe(state, "The Cultivated fraction area of floor must be between 0 and 10 (1000%)")
+        self.api.runtime.issue_severe(state, "The Cultivated fraction area of floor must be between 0 and 10 (1000%)")
 
     if rho_a < 0:
-        self.api.runtime_issue_severe(state, "The air density must greater than 0")
+        self.api.runtime.issue_severe(state, "The air density must greater than 0")
 
     if c_p < 0:
-        self.api.runtime_issue_severe(state, "The air specific heat capacity must greater than 0")
+        self.api.runtime.issue_severe(state, "The air specific heat capacity must greater than 0")
 
     if lmbda < 0:
-        self.api.runtime_issue_severe(state, "The latent heat vapor of water must be greater than 0")
+        self.api.runtime.issue_severe(state, "The latent heat vapor of water must be greater than 0")
 
     if rho_v < 0 or rho_v > 1:
-        self.api.runtime_issue_severe(state, "The lettuce leaf light reflectivity must be between 0 and 1")
+        self.api.runtime.issue_severe(state, "The lettuce leaf light reflectivity must be between 0 and 1")
 
     if LED_eff < 0 or LED_eff > 1:
-        self.api.runtime_issue_severe(state, "The LED efficiency must be between 0 and 1")
+        self.api.runtime.issue_severe(state, "The LED efficiency must be between 0 and 1")
 
     if T_a < -273.15:
-        self.api.runtime_issue_severe(state, "The input temperature is less than 0 K")
+        self.api.runtime.issue_severe(state, "The input temperature is less than 0 K")
 
     if P_LED < 0:
-        self.api.runtime_issue_severe(state, "The total power input has to be greater than 0")
+        self.api.runtime.issue_severe(state, "The total power input has to be greater than 0")
 
     if RH > 100 or RH < 0:
-        self.api.runtime_issue_severe(state, "The relative humidity must be between 0 and 100")
+        self.api.runtime.issue_severe(state, "The relative humidity must be between 0 and 100")
 
     if A_gr < 0:
-        self.api.runtime_issue_severe(state, "The agriculture space area have to be greater than 0")
+        self.api.runtime.issue_severe(state, "The agriculture space area have to be greater than 0")
 
     # -----------------------------------------------------------------------------------------------------------------------
     #    *** PERFORM ALL THE CALCULATION HERE FOR THIS MODEL. ***
@@ -94,9 +94,9 @@ def Type205(self, state, T_a, RH, **kwargs):
 
     T_s = T_a - 2
     res = 1  # To get in the loop (initial value)
+    i=0
 
-    while (res > 0.0001):
-        T_s = T_s + 0.0001
+    while (abs(res) > 0.00001) and i<1000:
         e_star = 0.611 * math.exp(17.4 * T_a / (T_a + 239))
         Xa_star = rho_a * c_p / lmbda / (gamma / 1000) * e_star * 1000  # [g/m^3]
         e = RH / 100 * e_star
@@ -105,8 +105,14 @@ def Type205(self, state, T_a, RH, **kwargs):
         epsilon = delta / (gamma / 1000)
         Xs = Xa_star + rho_a * 1000 * c_p / lmbda * epsilon * (T_s - T_a)
         q_lat_watt = LAI * lmbda * (Xs - Xa) / (r_s + r_a)  # W/m^2
-        q_sens_watt = LAI * rho_a * c_p * (T_s - T_a) / r_a * 1000
-        res = Rnet - q_sens_watt - q_lat_watt
+        q_sens_watt = Rnet - q_lat_watt
+        T_s_star = q_sens_watt * r_a / (LAI * rho_a * c_p  * 1000) +T_a
+        res = T_s_star - T_s
+        T_s = T_s_star
+        i+=1
+
+    if i>=1000:
+        self.api.runtime.issue_severe(state, "CEA Solver Failed")
 
     # -----------------------------------------------------------------------------------------------------------------------
     # Convert outputs units

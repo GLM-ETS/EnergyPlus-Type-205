@@ -14,6 +14,7 @@ class type205(EnergyPlusPlugin):
 
         self.handles_zone_temperature = None
         self.handles_zone_humidity = None
+        self.handles_zone_area = None
 
         ### Outputs back to E+ ###
         self.handle_zone_sensible_rate = None
@@ -29,6 +30,7 @@ class type205(EnergyPlusPlugin):
 
             self.handles_zone_temperature = self.api.exchange.get_variable_handle(state, "Zone Air Temperature", "Perimeter_ZN_4")
             self.handles_zone_humidity = self.api.exchange.get_variable_handle(state, "Zone Air Relative Humidity", "Perimeter_ZN_4")
+            self.handles_zone_area = self.api.exchange.get_internal_variable_handle(state, "Zone Floor Area","Perimeter_ZN_4")
 
             self.handle_zone_sensible_rate = self.api.exchange.get_actuator_handle(state,"OtherEquipment","Power Level","OTHEQ_SENSIBLE")
             self.handle_zone_latent_rate = self.api.exchange.get_actuator_handle(state,"OtherEquipment","Power Level","OTHEQ_LATENT")
@@ -37,8 +39,9 @@ class type205(EnergyPlusPlugin):
 
         current_zone_air_temperature = self.api.exchange.get_variable_value(state, self.handles_zone_temperature)
         current_zone_air_humidity = self.api.exchange.get_variable_value(state, self.handles_zone_humidity)
+        current_zone_area = self.api.exchange.get_internal_variable_value(state, self.handles_zone_area)
 
-        qs, ql = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity , LAI=2, CAC=1)
+        qs, ql = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity,area = current_zone_area, LAI=2, CAC=0.5)
 
 
         self.api.exchange.set_actuator_value(state, self.handle_zone_sensible_rate, qs)
