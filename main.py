@@ -24,29 +24,34 @@ class type205(EnergyPlusPlugin):
         # self.handle_zone_vegetation_temperature = None
         # self.handle_zone_reflected_radiation = None
 
+    def on_begin_new_environment(self, state) -> int:
+
+        self.handles_zone_area = self.api.exchange.get_internal_variable_handle(state, "Zone Floor Area", "Perimeter_ZN_4")
+        self.veg_temp_handle = self.api.exchange.get_global_handle(state, "VegTemp")
+
+        self.current_zone_area = self.api.exchange.get_internal_variable_value(state, self.handles_zone_area)
+
+        return 0
     def on_inside_hvac_system_iteration_loop(self, state) -> int:
 
         if not self.handles_set:
 
             self.handles_zone_temperature = self.api.exchange.get_variable_handle(state, "Zone Air Temperature", "Perimeter_ZN_4")
             self.handles_zone_humidity = self.api.exchange.get_variable_handle(state, "Zone Air Relative Humidity", "Perimeter_ZN_4")
-            self.handles_zone_area = self.api.exchange.get_internal_variable_handle(state, "Zone Floor Area","Perimeter_ZN_4")
 
             self.handle_zone_sensible_rate = self.api.exchange.get_actuator_handle(state,"OtherEquipment","Power Level","OTHEQ_SENSIBLE")
             self.handle_zone_latent_rate = self.api.exchange.get_actuator_handle(state,"OtherEquipment","Power Level","OTHEQ_LATENT")
+            self.handle_zone_rad_rate = self.api.exchange.get_actuator_handle(state,"OtherEquipment","Power Level","OTHEQ_RAD")
 
             self.handles_set = True
 
         current_zone_air_temperature = self.api.exchange.get_variable_value(state, self.handles_zone_temperature)
         current_zone_air_humidity = self.api.exchange.get_variable_value(state, self.handles_zone_humidity)
-        current_zone_area = self.api.exchange.get_internal_variable_value(state, self.handles_zone_area)
 
-        qs, ql = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity,area = current_zone_area, LAI=2, CAC=0.5)
-
+        qs, ql, qr = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity,area = self.current_zone_area, LAI=1, CAC=1)
 
         self.api.exchange.set_actuator_value(state, self.handle_zone_sensible_rate, qs)
         self.api.exchange.set_actuator_value(state, self.handle_zone_latent_rate, ql)
-
-
+        self.api.exchange.set_actuator_value(state, self.handle_zone_rad_rate, qr)
 
         return 0
