@@ -28,8 +28,10 @@
 <h3 align="center">EnergyPlus Type 205</h3>
 
   <p align="center">
-    project_description
-
+This project aims to model thermal and mass exchanges between crops and thermal zones in <br />
+controlled environnement agriculture (CEA) spaces modelled with EnergyPlus.
+  </p>
+</div>
 <!--     <br />
     <a href="https://github.com/GLM-ETS/Doc_Art2"><strong>Explore the docs »</strong></a>
     <br />
@@ -39,8 +41,7 @@
     <a href="https://github.com/GLM-ETS/Doc_Art2">Report Bug</a>
     ·
     <a href="https://github.com/GLM-ETS/Doc_Art2">Request Feature</a>-->
-  </p>
-</div>
+
 
 
 
@@ -89,11 +90,23 @@ Here's a blank template to get started: To avoid retyping too much info. Do a se
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
 
-### Prerequisites
+* Copy all the energyplus objects after the following marker in your .idf file :
+```
+!###################################
+```
+* Change the thermal zone name from <I>Thermal Zone 1</I> in :
+  * The pasted .idf objects
+  * In main.py
+* Review Parameters for simulation in :
+  * main.py
+  * Type205.py
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-This is an example of how to list things you need to use the software and how to install them.
+## Prerequisites
+
+
 * EnergyPlusV22-1-0
-
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 <!-- 
 ### Installation
 
@@ -133,11 +146,11 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 
 See the [open issues](https://github.com/GLM-ETS/Doc_Art2/issues) for a full list of proposed features (and known issues).
 -->
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTRIBUTING -->
 ## Contributing
-
+Contributions are not accepted at this moment
+<!-- 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
@@ -150,7 +163,7 @@ Don't forget to give the project a star! Thanks again!
 5. Open a Pull Request
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+-->
 
 
 <!-- LICENSE 
