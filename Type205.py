@@ -100,7 +100,7 @@ def Type205(self, state, T_a, RH, **kwargs):
     PPFD = P_LED * LED_eff * 5
     I_light = LED_eff * P_LED
     Rnet = (1 - rho_v) * I_light * CAC
-    q_loss = I_light - Rnet
+    q_loss = (I_light - Rnet) * (A_gr * Afv)
 
     r_a = 100
     r_s = 60 * (1500 + PPFD) / (200 + PPFD)
