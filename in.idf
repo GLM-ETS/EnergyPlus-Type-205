@@ -207,7 +207,7 @@ Building,
   ,                                       !- Loads Convergence Tolerance Value {W}
   ,                                       !- Temperature Convergence Tolerance Value {deltaC}
   ,                                       !- Solar Distribution
-  ,                                       !- Maximum Number of Warmup Days
+  300,                                       !- Maximum Number of Warmup Days
   ;                                       !- Minimum Number of Warmup Days
 
 Zone,
