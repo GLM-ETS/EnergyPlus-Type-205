@@ -25,6 +25,9 @@ class type205(EnergyPlusPlugin):
         # self.handle_zone_reflected_radiation = None
 
     def on_begin_new_environment(self, state) -> int:
+        """
+        Sets handles for vegetation temp output and Zone Area
+        """
 
         self.handles_zone_area = self.api.exchange.get_internal_variable_handle(state, "Zone Floor Area", "Thermal Zone 1")
         self.veg_temp_handle = self.api.exchange.get_global_handle(state, "VegTemp")
@@ -33,6 +36,11 @@ class type205(EnergyPlusPlugin):
 
         return 0
     def on_inside_hvac_system_iteration_loop(self, state) -> int:
+        """
+        Sets handles for inputs and outputs
+        Calls the Type205 with specified LAI and CAC
+        Returns qs,ql,qr to EnergyPlus simulation
+        """
 
         if not self.handles_set:
 
@@ -48,7 +56,7 @@ class type205(EnergyPlusPlugin):
         current_zone_air_temperature = self.api.exchange.get_variable_value(state, self.handles_zone_temperature)
         current_zone_air_humidity = self.api.exchange.get_variable_value(state, self.handles_zone_humidity)
 
-        qs, ql, qr = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity,area = self.current_zone_area, LAI=2, CAC=1)
+        qs, ql, qr = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity,area = self.current_zone_area, LAI=1, CAC=1)
 
         self.api.exchange.set_actuator_value(state, self.handle_zone_sensible_rate, qs)
         self.api.exchange.set_actuator_value(state, self.handle_zone_latent_rate, ql)

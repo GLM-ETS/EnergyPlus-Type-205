@@ -1,15 +1,5 @@
 import math
 def Type205(self, state, T_a, RH, **kwargs):
-    """
-
-    :param self: EnergyPlus API plugin object
-    :param state: From EnergyPlus Simulation
-    :param T_a: Zone Air Temperature
-    :param RH: Zone Air Relative Humidity
-    :param kwargs: LAI CAC AREA
-    :return: qs, ql, qr
-    """
-
     P_LED = 120  # Total LED Power [W]
     A_gr = kwargs["area"]  # Floor area [m^2]
     LAI = kwargs["LAI"]  # LeafAreaIndex [m^2_leaves/m^2_cultivated area]
@@ -100,7 +90,7 @@ def Type205(self, state, T_a, RH, **kwargs):
     PPFD = P_LED * LED_eff * 5
     I_light = LED_eff * P_LED
     Rnet = (1 - rho_v) * I_light * CAC
-    q_loss = (I_light - Rnet) * (A_gr * Afv)
+    q_loss = (I_light - Rnet) * (A_gr * Afv) # [W]
 
     r_a = 100
     r_s = 60 * (1500 + PPFD) / (200 + PPFD)
