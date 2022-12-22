@@ -1177,13 +1177,6 @@ ZoneHVAC:IdealLoadsAirSystem,
   Output:Variable,Thermal Zone 1,Zone Air Relative Humidity,timestep;
   Output:Variable,Vegetation Temperature,PythonPlugin:OutputVariable,Timestep;
 
-  PythonPlugin:SearchPaths,
-    AddPath,
-    Yes,
-    Yes,
-    Yes,
-    C:\Users\Gilbert\.conda\envs\Doc_Art2\Lib\site-packages;
-
   PythonPlugin:Instance,
     Heating Setpoint Override,  !- Name
     Yes,                     !- Run During Warmup Days
