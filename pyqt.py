@@ -168,6 +168,7 @@ class MainWindow(QMainWindow):
             with open(self.output_path+ "/" + "CEA_idf.idf","a") as f:
                 f.write(addition(self.params.zone_name))
 
+            #Copy Python Files
             shutil.copyfile(path + "/" + "Type205.py" , self.output_path + "/" + "Type205.py")
             shutil.copyfile(path + "/" + "main.py",self.output_path + "/" + "main.py")
 
