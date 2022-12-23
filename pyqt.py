@@ -1,8 +1,7 @@
 import sys, pickle, shutil
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QPushButton, QLabel, QHBoxLayout, \
     QVBoxLayout, QComboBox, QLineEdit, QSlider, QSpacerItem, QMessageBox
-from PyQt6.QtGui import QPixmap, QPainter, QMouseEvent
-from PyQt6.QtGui import QIcon, QFont
+from PyQt6.QtGui import QFont
 from addition import *
 from PyQt6.QtCore import Qt
 class params(object):
