@@ -35,7 +35,7 @@ class type205(EnergyPlusPlugin):
         Sets handles for vegetation temp output and Zone Area
         """
 
-        self.handles_zone_area = self.api.exchange.get_internal_variable_handle(state, "Zone Floor Area", "Thermal Zone 1")
+        self.handles_zone_area = self.api.exchange.get_internal_variable_handle(state, "Zone Floor Area", self.params["zone_name"])
         self.veg_temp_handle = self.api.exchange.get_global_handle(state, "VegTemp")
         self.current_zone_area = self.api.exchange.get_internal_variable_value(state, self.handles_zone_area)
 
@@ -49,8 +49,8 @@ class type205(EnergyPlusPlugin):
         # Retrieve handles from E+
         if not self.handles_set:
 
-            self.handles_zone_temperature = self.api.exchange.get_variable_handle(state, "Zone Air Temperature", "Thermal Zone 1")
-            self.handles_zone_humidity = self.api.exchange.get_variable_handle(state, "Zone Air Relative Humidity", "Thermal Zone 1")
+            self.handles_zone_temperature = self.api.exchange.get_variable_handle(state, "Zone Air Temperature", self.params["zone_name"])
+            self.handles_zone_humidity = self.api.exchange.get_variable_handle(state, "Zone Air Relative Humidity", self.params["zone_name"])
 
             self.handle_zone_sensible_rate = self.api.exchange.get_actuator_handle(state,"OtherEquipment","Power Level","OTHEQ_SENSIBLE")
             self.handle_zone_latent_rate = self.api.exchange.get_actuator_handle(state,"OtherEquipment","Power Level","OTHEQ_LATENT")
