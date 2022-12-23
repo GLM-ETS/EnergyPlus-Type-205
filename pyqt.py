@@ -1,8 +1,7 @@
 import sys, pickle, shutil
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QPushButton, QLabel, QHBoxLayout, \
     QVBoxLayout, QComboBox, QLineEdit, QSlider, QSpacerItem, QMessageBox
-from PyQt6.QtGui import QPixmap, QPainter, QMouseEvent
-from PyQt6.QtGui import QIcon, QFont
+from PyQt6.QtGui import QFont
 from addition import *
 from PyQt6.QtCore import Qt
 class params(object):
@@ -158,11 +157,20 @@ class MainWindow(QMainWindow):
 
     def generate(self):
         try:
+            # Needed for py installer
+            path = getattr(sys, '_MEIPASS', os.getcwd())
+
             self.params.zone_name = self.box.currentText()
             self.params.dump(self.output_path)
             shutil.copyfile(self.input_path,self.output_path+ "/" + "CEA_idf.idf")
+            # Append initial file wit E+ objects
             with open(self.output_path+ "/" + "CEA_idf.idf","a") as f:
                 f.write(addition(self.params.zone_name))
+
+            #Copy Python Files
+            shutil.copyfile(path + "/" + "Type205.py" , self.output_path + "/" + "Type205.py")
+            shutil.copyfile(path + "/" + "main.py",self.output_path + "/" + "main.py")
+
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Done !")
             dlg.setText("Files Generated")

@@ -1,4 +1,6 @@
 /sim/
+/build/
+/dist/
 /src/
 /venv/
 /.idea/
