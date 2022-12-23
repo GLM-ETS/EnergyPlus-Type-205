@@ -1,6 +1,6 @@
-import sys
+import sys, time
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QPushButton, QLabel, QHBoxLayout, \
-    QVBoxLayout, QComboBox, QDial, QSlider
+    QVBoxLayout, QComboBox, QLineEdit, QSlider, QErrorMessage, QMessageBox
 from PyQt6.QtGui import QPixmap, QPainter, QMouseEvent
 from PyQt6.QtGui import QIcon, QFont
 from os.path import expanduser
@@ -13,6 +13,10 @@ class MainWindow(QMainWindow):
         self.idf_loaded = False
         self.LAI = 1
         self.CAC = 1
+        self.Afv = 1
+        self.P_LED = 120
+        self.rho_v = 0.05
+        self.LED_eff = 0.52
         self.initUI()
 
 
@@ -21,6 +25,7 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout()
         layout2 = QHBoxLayout()
         layout3 = QHBoxLayout()
+        layout4 = QHBoxLayout()
 
         w = []
         w2 = []
@@ -41,22 +46,59 @@ class MainWindow(QMainWindow):
         w.append(self.box)
 
         d = {}
-        names = ["LAI","CAC"]
+        names_dict = {"LAI" : {"slider_max":50},"CAC":{"slider_max":100}, "Afv":{"slider_max":10}}
+
+        names = list(names_dict.keys())
 
 
         for x in range(1, len(names)+1):
             s = "layout_D{0}".format(x)
             d[s] = QVBoxLayout()
+
             slider = QSlider(Qt.Orientation.Horizontal)
-            lab = QLabel(names[x - 1] + " : " )
+            slider.setRange(0, names_dict[names[x-1]]["slider_max"])
+            slider.setValue(getattr(self,names[x-1]))
+            slider.setSingleStep(1)
+            slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+            slider.setObjectName("slider_"+names[x - 1])
+            slider.valueChanged.connect(self.selection_changed)
+
+
+            lab = QLabel(names[x - 1] + " : " + str(getattr(self,names[x-1])))
             lab.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            setattr(self,"label_{}".format(names[x-1]),lab)
+            lab.setObjectName("label_"+names[x - 1])
+
             d[s].addWidget(slider)
             d[s].addWidget(lab)
             w2.append(d[s])
 
+        d_LED ={}
+        LED_dict = {"P_LED": {"max": 500}, "LED_eff": {"max": 100}, "rho_v": {"max": 10}}
+        LED_names = list(LED_dict.keys())
+
+        w3 = []
+        for x in range(1, len(LED_names)+1):
+            s = "layout_D{0}".format(x)
+            d[s] = QVBoxLayout()
+            button2 = QLineEdit()
+            button2.textChanged.connect(self.selection_changed)
+            button2.setObjectName("field_" + LED_names[x - 1])
+            d[s].addWidget(button2)
+            lab = QLabel(LED_names[x - 1] +" : " +str(getattr(self,LED_names[x-1])))
+            lab.setObjectName("label_" + LED_names[x - 1])
+            d[s].addWidget(lab)
+            w3.append(d[s])
+
+        button3 = QPushButton("Select Output Dir",self)
+        button3.clicked.connect(lambda: self.select_output_dir())
+
+        layout4.addWidget(button3)
+        layout4.addWidget(QPushButton("Generate",self))
+
+
         w.append(layout2)
         w.append(layout3)
+        w.append(layout4)
 
         for item in w:
             if type(item) == QHBoxLayout or type(item) == QVBoxLayout:
@@ -70,6 +112,14 @@ class MainWindow(QMainWindow):
             else:
                 layout2.addWidget(item)
 
+        for item in w3:
+            if type(item) == QHBoxLayout or type(item) == QVBoxLayout:
+                layout3.addLayout(item)
+            else:
+                layout3.addWidget(item)
+
+
+
 
 
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -79,17 +129,40 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
 
-        self.options = self.set_options_widgets([layout2])
+        self.options = self.set_options_widgets([layout2, layout3])
         self.setCentralWidget(widget)
         self.options_hidden = True
         self.toggle_options()
+
+    def selection_changed(self):
+        if type(self.sender())==QLineEdit:
+            identifier = "_".join(self.sender().objectName().split("_")[1:])
+            try:
+                value = float(self.sender().text())
+            except:
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Oups !")
+                dlg.setText("Use . as decimal separator")
+                dlg.exec()
+                return
+        elif type(self.sender())==QSlider:
+            identifier = self.sender().objectName().split("_")[1]
+            value = self.sender().value() /10
+        setattr(self,identifier,value)
+        lab = self.findChild(QLabel,"label_" + identifier)
+        lab.setText(identifier + " : "+str(value))
+        lab.adjustSize()
+        return
 
     def set_options_widgets(self, layout_list):
         w = []
         for l in layout_list:
                 for idx in range(l.count()):
-                    for x in range(l.itemAt(idx).count()):
-                        w.append(l.itemAt(idx).itemAt(x).widget())
+                    try:
+                        for x in range(l.itemAt(idx).count()):
+                            w.append(l.itemAt(idx).itemAt(x).widget())
+                    except:
+                        w.append(l.itemAt(idx).widget())
         return w
 
     def toggle_options(self):
@@ -99,6 +172,11 @@ class MainWindow(QMainWindow):
             elif ~self.options_hidden:
                 w.show()
         return
+
+    def select_output_dir(self):
+        output_dialog = QFileDialog()
+        output_dialog.setWindowTitle('Select Output Directory')
+        return output_dialog.getExistingDirectory(self, "Select Output Directory")
 
     def choose_idf(self):
         import_dialog = QFileDialog()

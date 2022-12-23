@@ -8,7 +8,7 @@
   OtherEquipment,
     OTHEQ_SENSIBLE, !- Name
     , !- Fuel Use Type
-    Thermal Zone 1, !- Zone or ZoneList or Space or SpaceList Name
+    , !- Zone or ZoneList or Space or SpaceList Name
     ALWAYSON , !- SCHEDULE Name
     EquipmentLevel , !- Design Level calculation method
     0, !- Design Level {W}
