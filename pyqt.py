@@ -14,6 +14,7 @@ class params(object):
         self.P_LED = 120
         self.rho_v = 0.05
         self.LED_eff = 0.52
+        self.zone_name = ""
 
     def dump(self, folder_path):
         with open(folder_path + "/" + "Type205_params.pkl", 'wb') as handle:
@@ -157,10 +158,11 @@ class MainWindow(QMainWindow):
 
     def generate(self):
         try:
+            self.params.zone_name = self.box.currentText()
             self.params.dump(self.output_path)
             shutil.copyfile(self.input_path,self.output_path+ "/" + "CEA_idf.idf")
             with open(self.output_path+ "/" + "CEA_idf.idf","a") as f:
-                f.write(addition(self.box.currentText()))
+                f.write(addition(self.params.zone_name))
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Done !")
             dlg.setText("Files Generated")
