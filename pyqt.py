@@ -1,23 +1,35 @@
-import sys, time
+import sys, pickle, shutil
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QPushButton, QLabel, QHBoxLayout, \
     QVBoxLayout, QComboBox, QLineEdit, QSlider, QErrorMessage, QMessageBox
 from PyQt6.QtGui import QPixmap, QPainter, QMouseEvent
 from PyQt6.QtGui import QIcon, QFont
-from os.path import expanduser
-# from prog_g import create_pdf
-from PyQt6.QtCore import QSize, Qt, pyqtSignal, QRect, QLineF, QEvent
-
-class MainWindow(QMainWindow):
+from addition import *
+from PyQt6.QtCore import Qt
+class params(object):
     def __init__(self):
         super().__init__()
-        self.idf_loaded = False
         self.LAI = 1
         self.CAC = 1
         self.Afv = 1
         self.P_LED = 120
         self.rho_v = 0.05
         self.LED_eff = 0.52
+
+    def dump(self, folder_path):
+        with open(folder_path + "/" + "Type205_params.pkl", 'wb') as handle:
+            pickle.dump(self.__dict__,handle)
+        return
+
+
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.params = params()
+        self.idf_loaded = False
         self.initUI()
+
 
 
     def initUI(self):
@@ -57,14 +69,14 @@ class MainWindow(QMainWindow):
 
             slider = QSlider(Qt.Orientation.Horizontal)
             slider.setRange(0, names_dict[names[x-1]]["slider_max"])
-            slider.setValue(getattr(self,names[x-1]))
+            slider.setValue(getattr(self.params,names[x-1]))
             slider.setSingleStep(1)
             slider.setTickPosition(QSlider.TickPosition.TicksBelow)
             slider.setObjectName("slider_"+names[x - 1])
             slider.valueChanged.connect(self.selection_changed)
 
 
-            lab = QLabel(names[x - 1] + " : " + str(getattr(self,names[x-1])))
+            lab = QLabel(names[x - 1] + " : " + str(getattr(self.params,names[x-1])))
             lab.setAlignment(Qt.AlignmentFlag.AlignCenter)
             lab.setObjectName("label_"+names[x - 1])
 
@@ -84,16 +96,18 @@ class MainWindow(QMainWindow):
             button2.textChanged.connect(self.selection_changed)
             button2.setObjectName("field_" + LED_names[x - 1])
             d[s].addWidget(button2)
-            lab = QLabel(LED_names[x - 1] +" : " +str(getattr(self,LED_names[x-1])))
+            lab = QLabel(LED_names[x - 1] +" : " +str(getattr(self.params,LED_names[x-1])))
             lab.setObjectName("label_" + LED_names[x - 1])
             d[s].addWidget(lab)
             w3.append(d[s])
 
         button3 = QPushButton("Select Output Dir",self)
-        button3.clicked.connect(lambda: self.select_output_dir())
+        button3.clicked.connect(lambda: self.select_output())
 
         layout4.addWidget(button3)
-        layout4.addWidget(QPushButton("Generate",self))
+        button4 = QPushButton("Generate", self)
+        button4.clicked.connect(lambda: self.generate())
+        layout4.addWidget(button4)
 
 
         w.append(layout2)
@@ -134,6 +148,27 @@ class MainWindow(QMainWindow):
         self.options_hidden = True
         self.toggle_options()
 
+    def generate(self):
+        try:
+            self.params.dump(self.output_path)
+            shutil.copyfile(self.input_path,self.output_path+ "/" + "CEA_idf.idf")
+            with open(self.output_path+ "/" + "CEA_idf.idf","a") as f:
+                f.write(addition(self.box.currentText()))
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Done !")
+            dlg.setText("Files Generated")
+            dlg.exec()
+        except Exception as e:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Oups !")
+            dlg.setText(str(e))
+            dlg.exec()
+        return
+
+    def select_output(self):
+        self.output_path = QFileDialog.getExistingDirectory(self, "Select Output Dir")
+        return
+
     def selection_changed(self):
         if type(self.sender())==QLineEdit:
             identifier = "_".join(self.sender().objectName().split("_")[1:])
@@ -148,7 +183,7 @@ class MainWindow(QMainWindow):
         elif type(self.sender())==QSlider:
             identifier = self.sender().objectName().split("_")[1]
             value = self.sender().value() /10
-        setattr(self,identifier,value)
+        setattr(self.params,identifier,value)
         lab = self.findChild(QLabel,"label_" + identifier)
         lab.setText(identifier + " : "+str(value))
         lab.adjustSize()
@@ -173,11 +208,6 @@ class MainWindow(QMainWindow):
                 w.show()
         return
 
-    def select_output_dir(self):
-        output_dialog = QFileDialog()
-        output_dialog.setWindowTitle('Select Output Directory')
-        return output_dialog.getExistingDirectory(self, "Select Output Directory")
-
     def choose_idf(self):
         import_dialog = QFileDialog()
         import_dialog.setWindowTitle('Select .idf file:')
@@ -193,6 +223,7 @@ class MainWindow(QMainWindow):
             return import_dialog.selectedFiles()[0]
 
     def parse_thermal_zones(self,path):
+        self.input_path = path
         with open(path) as f:
             lines = f.readlines()  # list containing lines of file
             zones = []  # To store column names
