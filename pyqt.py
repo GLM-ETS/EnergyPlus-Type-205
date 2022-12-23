@@ -157,12 +157,14 @@ class MainWindow(QMainWindow):
 
     def generate(self):
         try:
+            # Needed for py installer
             path = getattr(sys, '_MEIPASS', os.getcwd())
 
             self.params.zone_name = self.box.currentText()
             self.params.dump(self.output_path)
 
             shutil.copyfile(self.input_path,self.output_path+ "/" + "CEA_idf.idf")
+            # Append initial file wit E+ objects
             with open(self.output_path+ "/" + "CEA_idf.idf","a") as f:
                 f.write(addition(self.params.zone_name))
 

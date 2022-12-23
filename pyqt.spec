@@ -6,17 +6,10 @@ block_cipher = None
 
 a = Analysis(
     ['pyqt.py'],
-<<<<<<< HEAD
-    pathex=[],
-    binaries=[],
-    datas=[],
-    hiddenimports=[],
-=======
     pathex=['C:\\Users\\Gilbert\\PycharmProjects\\Doc_Art2'],
     binaries=[],
     datas=[('main.py','.'),('Type205.py','.')],
     hiddenimports=['numbers'],
->>>>>>> 0.2.2
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
