@@ -186,6 +186,7 @@ class MainWindow(QMainWindow):
         import_dialog.setDefaultSuffix('idf')
 
         if import_dialog.exec()==1 and len(import_dialog.selectedFiles())==1:
+            self.box.clear()
             self.box.addItems(self.parse_thermal_zones(import_dialog.selectedFiles()[0]))
             self.options_hidden = False
             self.toggle_options()
