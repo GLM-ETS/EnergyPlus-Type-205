@@ -1,4 +1,4 @@
-import sys
+import sys, pickle
 from Type205 import *
 
 sys.path.append("C:\EnergyPlusV22-1-0")
@@ -9,6 +9,9 @@ class type205(EnergyPlusPlugin):
     Type205 = Type205
     def __init__(self):
         super().__init__()
+
+        with open('Type205_params.pkl', 'rb') as handle:
+            self.params = pickle.load(handle)
 
         self.handles_set = False
 
@@ -31,7 +34,6 @@ class type205(EnergyPlusPlugin):
 
         self.handles_zone_area = self.api.exchange.get_internal_variable_handle(state, "Zone Floor Area", "Thermal Zone 1")
         self.veg_temp_handle = self.api.exchange.get_global_handle(state, "VegTemp")
-
         self.current_zone_area = self.api.exchange.get_internal_variable_value(state, self.handles_zone_area)
 
         return 0
@@ -56,10 +58,12 @@ class type205(EnergyPlusPlugin):
         current_zone_air_temperature = self.api.exchange.get_variable_value(state, self.handles_zone_temperature)
         current_zone_air_humidity = self.api.exchange.get_variable_value(state, self.handles_zone_humidity)
 
-        qs, ql, qr = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity,area = self.current_zone_area, LAI=1, CAC=1)
+        qs, ql, qr = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity,area = self.current_zone_area, **self.params)
 
         self.api.exchange.set_actuator_value(state, self.handle_zone_sensible_rate, qs)
         self.api.exchange.set_actuator_value(state, self.handle_zone_latent_rate, ql)
         self.api.exchange.set_actuator_value(state, self.handle_zone_rad_rate, qr)
 
         return 0
+
+type205()

@@ -1,12 +1,12 @@
 import math
 def Type205(self, state, T_a, RH, **kwargs):
-    P_LED = 120  # Total LED Power [W]
+    P_LED = kwargs["P_LED"]  # Total LED Power [W]
     A_gr = kwargs["area"]  # Floor area [m^2]
     LAI = kwargs["LAI"]  # LeafAreaIndex [m^2_leaves/m^2_cultivated area]
     CAC = kwargs["CAC"]  # Coverage of the floor of the cultivated area [-]
-    Afv = 1  # Cultivated fraction [-]
-    rho_v = 0.05  # Lettuce relfectivity [-]
-    LED_eff = 0.52  # LED efficiency [-]
+    Afv = kwargs["Afv"]  # Cultivated fraction [-]
+    rho_v = kwargs["rho_v"]   # Lettuce relfectivity [-]
+    LED_eff = kwargs["LED_eff"]  # LED efficiency [-]
 
     #  #Outputs
     # q_sens #Sensible gain to air from vegetation [kJ/hr]
