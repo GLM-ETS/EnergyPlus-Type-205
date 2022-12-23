@@ -10,11 +10,14 @@ class type205(EnergyPlusPlugin):
     def __init__(self):
         super().__init__()
 
+        # Read GUI generated parameters
         with open('Type205_params.pkl', 'rb') as handle:
             self.params = pickle.load(handle)
 
+        # Flags
         self.handles_set = False
 
+        # Input handles
         self.handles_zone_temperature = None
         self.handles_zone_humidity = None
         self.handles_zone_area = None
@@ -43,7 +46,7 @@ class type205(EnergyPlusPlugin):
         Calls the Type205 with specified LAI and CAC
         Returns qs,ql,qr to EnergyPlus simulation
         """
-
+        # Retrieve handles from E+
         if not self.handles_set:
 
             self.handles_zone_temperature = self.api.exchange.get_variable_handle(state, "Zone Air Temperature", "Thermal Zone 1")
@@ -55,11 +58,14 @@ class type205(EnergyPlusPlugin):
 
             self.handles_set = True
 
+        # Read Inputs from E+
         current_zone_air_temperature = self.api.exchange.get_variable_value(state, self.handles_zone_temperature)
         current_zone_air_humidity = self.api.exchange.get_variable_value(state, self.handles_zone_humidity)
 
+        # Run modified type 205
         qs, ql, qr = self.Type205(state, current_zone_air_temperature, current_zone_air_humidity,area = self.current_zone_area, **self.params)
 
+        # Send output to E+
         self.api.exchange.set_actuator_value(state, self.handle_zone_sensible_rate, qs)
         self.api.exchange.set_actuator_value(state, self.handle_zone_latent_rate, ql)
         self.api.exchange.set_actuator_value(state, self.handle_zone_rad_rate, qr)
