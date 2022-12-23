@@ -1,6 +1,6 @@
 import sys, time
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QPushButton, QLabel, QHBoxLayout, \
-    QVBoxLayout, QComboBox, QLineEdit, QSlider, QErrorMessage, QMessageBox
+    QVBoxLayout, QComboBox, QLineEdit, QSlider, QSpacerItem, QMessageBox
 from PyQt6.QtGui import QPixmap, QPainter, QMouseEvent
 from PyQt6.QtGui import QIcon, QFont
 from os.path import expanduser
@@ -30,13 +30,16 @@ class MainWindow(QMainWindow):
         w = []
         w2 = []
 
-        label = QLabel("EnergyPlus CEA Simulator",self)
+        label = QLabel("EnergyPlus CEA Generator",self)
         label.setFont(QFont("Sanserif", 24))
         w.append(label)
+
+        w.append(QSpacerItem(20,20))
 
         button = QPushButton('Select .idf', self)
         button.setToolTip('Select EnergyPlus Input File')
         w.append(button)
+        w.append(QSpacerItem(20, 20))
 
         label2 = QLabel(".idf Thermal Zones",self)
         label2.setFont(QFont("Sanserif", 12))
@@ -44,6 +47,7 @@ class MainWindow(QMainWindow):
 
         self.box = QComboBox(self)
         w.append(self.box)
+        w.append(QSpacerItem(20, 20))
 
         d = {}
         names_dict = {"LAI" : {"slider_max":50},"CAC":{"slider_max":100}, "Afv":{"slider_max":10}}
@@ -98,11 +102,14 @@ class MainWindow(QMainWindow):
 
         w.append(layout2)
         w.append(layout3)
+        w.append(QSpacerItem(20, 20))
         w.append(layout4)
 
         for item in w:
             if type(item) == QHBoxLayout or type(item) == QVBoxLayout:
                 layout.addLayout(item)
+            elif type(item)==QSpacerItem:
+                layout.addSpacerItem(item)
             else:
                 layout.addWidget(item)
 
@@ -186,6 +193,7 @@ class MainWindow(QMainWindow):
         import_dialog.setDefaultSuffix('idf')
 
         if import_dialog.exec()==1 and len(import_dialog.selectedFiles())==1:
+            self.box.clear()
             self.box.addItems(self.parse_thermal_zones(import_dialog.selectedFiles()[0]))
             self.options_hidden = False
             self.toggle_options()
