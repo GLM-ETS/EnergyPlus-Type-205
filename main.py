@@ -1,4 +1,4 @@
-import sys, pickle, ctypes
+import sys, pickle
 from Type205 import *
 
 sys.path.append("C:\EnergyPlusV22-1-0")
