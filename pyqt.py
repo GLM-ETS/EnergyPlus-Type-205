@@ -1,4 +1,4 @@
-import sys, pickle, shutil
+import sys, pickle, shutil, os
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QPushButton, QLabel, QHBoxLayout, \
     QVBoxLayout, QComboBox, QLineEdit, QSlider, QSpacerItem, QMessageBox
 from PyQt6.QtGui import QPixmap, QPainter, QMouseEvent
@@ -151,18 +151,25 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
 
-        self.options = self.set_options_widgets([layout2, layout3])
+        self.options = self.set_options_widgets([layout2, layout3, layout4])
         self.setCentralWidget(widget)
         self.options_hidden = True
         self.toggle_options()
 
     def generate(self):
         try:
+            path = getattr(sys, '_MEIPASS', os.getcwd())
+
             self.params.zone_name = self.box.currentText()
             self.params.dump(self.output_path)
+
             shutil.copyfile(self.input_path,self.output_path+ "/" + "CEA_idf.idf")
             with open(self.output_path+ "/" + "CEA_idf.idf","a") as f:
                 f.write(addition(self.params.zone_name))
+
+            shutil.copyfile(path + "/" + "Type205.py" , self.output_path + "/" + "Type205.py")
+            shutil.copyfile(path + "/" + "main.py",self.output_path + "/" + "main.py")
+
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Done !")
             dlg.setText("Files Generated")
