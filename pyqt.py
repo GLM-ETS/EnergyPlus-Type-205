@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
         label2.setFont(QFont("Sanserif", 12))
         w.append(label2)
 
-        self.box = QComboBox(self)
+        self.box = QComboBox()
         w.append(self.box)
         w.append(QSpacerItem(20, 20))
 
@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
 
-        self.options = self.set_options_widgets([layout2, layout3, layout4])
+        self.options = self.set_options_widgets([layout2, layout3, layout4, self.box, label2])
         self.setCentralWidget(widget)
         self.options_hidden = True
         self.toggle_options()
@@ -210,12 +210,18 @@ class MainWindow(QMainWindow):
     def set_options_widgets(self, layout_list):
         w = []
         for l in layout_list:
-                for idx in range(l.count()):
-                    try:
-                        for x in range(l.itemAt(idx).count()):
-                            w.append(l.itemAt(idx).itemAt(x).widget())
-                    except:
-                        w.append(l.itemAt(idx).widget())
+            try:
+                if type(l) == QComboBox:
+                    w.append(l)
+                else:
+                    for idx in range(l.count()):
+                        try:
+                            for x in range(l.itemAt(idx).count()):
+                                w.append(l.itemAt(idx).itemAt(x).widget())
+                        except:
+                            w.append(l.itemAt(idx).widget())
+            except:
+                w.append(l)
         return w
 
     def toggle_options(self):
