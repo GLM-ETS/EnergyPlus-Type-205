@@ -54,7 +54,7 @@ class MainWindow(QMainWindow):
         self.setFixedSize(640, 380)
         self.idf_loaded = False
         self.initUI()
-        self.setWindowTitle("CEA+ 0.3")
+        self.setWindowTitle("CEA+ 0.4")
 
 
 
