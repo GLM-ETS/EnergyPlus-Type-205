@@ -1,9 +1,33 @@
 import sys, pickle, shutil
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QPushButton, QLabel, QHBoxLayout, \
-    QVBoxLayout, QComboBox, QLineEdit, QSlider, QSpacerItem, QMessageBox
+    QVBoxLayout, QComboBox, QLineEdit, QSlider, QSpacerItem, QMessageBox, QStackedLayout, QDialog, QDialogButtonBox
 from PyQt6.QtGui import QFont
 from addition import *
 from PyQt6.QtCore import Qt
+
+class CustomDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("License")
+
+        QBtn = QDialogButtonBox.StandardButton.Ok
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.layout = QVBoxLayout()
+        message = QLabel("""Copyright 2023 LTSB - ÉTS
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.""")
+        message.setWordWrap(True)
+        self.layout.addWidget(message)
+        self.layout.addWidget(self.buttonBox)
+        self.setLayout(self.layout)
+
 class params(object):
     def __init__(self):
         super().__init__()
@@ -27,8 +51,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.params = params()
+        self.setFixedSize(640, 380)
         self.idf_loaded = False
         self.initUI()
+        self.setWindowTitle("CEA+ 0.4")
 
 
 
@@ -42,23 +68,47 @@ class MainWindow(QMainWindow):
         w = []
         w2 = []
 
+        lay_label = QHBoxLayout()
         label = QLabel("EnergyPlus CEA Generator",self)
         label.setFont(QFont("Sanserif", 24))
-        w.append(label)
+        label.adjustSize()
+        lay_label.addStretch(1)
+        lay_label.addWidget(label)
+        lay_label.addStretch(1)
 
-        w.append(QSpacerItem(20,20))
-
+        lay_button = QHBoxLayout()
         button = QPushButton('Select .idf', self)
         button.setToolTip('Select EnergyPlus Input File')
-        w.append(button)
-        w.append(QSpacerItem(20, 20))
+        button.adjustSize()
+        button.clicked.connect(lambda: self.choose_idf())
+        lay_button.addStretch(1)
+        lay_button.addWidget(button)
+        lay_button.addStretch(1)
+
+        lay_label2 = QHBoxLayout()
+        label = QLabel("",self)
+        label.adjustSize()
+        lay_label2.addWidget(label)
+        lay_label2.addStretch(1)
+
+        self.lab_input_path = label
+
+        w.append(lay_label)
+        w.append(QSpacerItem(0,10))
+        w.append(lay_button)
+        w.append(QSpacerItem(0, 5))
+        w.append(lay_label2)
+        w.append(QSpacerItem(0, 10))
 
         label2 = QLabel(".idf Thermal Zones",self)
         label2.setFont(QFont("Sanserif", 12))
         w.append(label2)
 
-        self.box = QComboBox(self)
-        w.append(self.box)
+        lay_box = QHBoxLayout()
+        self.box = QComboBox()
+        lay_box.addWidget(self.box)
+        lay_box.addStretch(1)
+        w.append(lay_box)
         w.append(QSpacerItem(20, 20))
 
         d = {}
@@ -113,17 +163,37 @@ class MainWindow(QMainWindow):
         button4.clicked.connect(lambda: self.generate())
         layout4.addWidget(button4)
 
-
         w.append(layout2)
         w.append(layout3)
         w.append(QSpacerItem(20, 20))
         w.append(layout4)
 
+        lay_label2 = QHBoxLayout()
+        label = QLabel("",self)
+        label.adjustSize()
+        lay_label2.addWidget(label)
+        lay_label2.addStretch(1)
+
+        self.lab_output_path = label
+
+        w.append(lay_label2)
+
+        lay_button = QHBoxLayout()
+        button = QPushButton('License', self)
+        button.adjustSize()
+        button.clicked.connect(lambda: self.license_clicked())
+        lay_button.addStretch(1)
+        lay_button.addWidget(button)
+        lay_button.addStretch(1)
+        w.append(lay_button)
+
         for item in w:
-            if type(item) == QHBoxLayout or type(item) == QVBoxLayout:
+            if type(item) == QHBoxLayout or type(item) == QVBoxLayout or type(item) == QStackedLayout:
                 layout.addLayout(item)
             elif type(item)==QSpacerItem:
                 layout.addSpacerItem(item)
+            elif item == "s":
+                layout.addStretch(1)
             else:
                 layout.addWidget(item)
 
@@ -139,18 +209,10 @@ class MainWindow(QMainWindow):
             else:
                 layout3.addWidget(item)
 
-
-
-
-
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        button.clicked.connect(lambda: self.choose_idf())
-
         widget = QWidget()
         widget.setLayout(layout)
 
-        self.options = self.set_options_widgets([layout2, layout3])
+        self.options = self.set_options_widgets([layout2, layout3, layout4, self.box, label2])
         self.setCentralWidget(widget)
         self.options_hidden = True
         self.toggle_options()
@@ -184,6 +246,7 @@ class MainWindow(QMainWindow):
 
     def select_output(self):
         self.output_path = QFileDialog.getExistingDirectory(self, "Select Output Dir")
+        self.lab_output_path.setText(self.output_path)
         return
 
     def selection_changed(self):
@@ -209,12 +272,18 @@ class MainWindow(QMainWindow):
     def set_options_widgets(self, layout_list):
         w = []
         for l in layout_list:
-                for idx in range(l.count()):
-                    try:
-                        for x in range(l.itemAt(idx).count()):
-                            w.append(l.itemAt(idx).itemAt(x).widget())
-                    except:
-                        w.append(l.itemAt(idx).widget())
+            try:
+                if type(l) == QComboBox:
+                    w.append(l)
+                else:
+                    for idx in range(l.count()):
+                        try:
+                            for x in range(l.itemAt(idx).count()):
+                                w.append(l.itemAt(idx).itemAt(x).widget())
+                        except:
+                            w.append(l.itemAt(idx).widget())
+            except:
+                w.append(l)
         return w
 
     def toggle_options(self):
@@ -235,8 +304,11 @@ class MainWindow(QMainWindow):
         if import_dialog.exec()==1 and len(import_dialog.selectedFiles())==1:
             self.box.clear()
             self.box.addItems(self.parse_thermal_zones(import_dialog.selectedFiles()[0]))
+            self.box.adjustSize()
             self.options_hidden = False
             self.toggle_options()
+            self.idf_loaded = True
+            self.lab_input_path.setText(import_dialog.selectedFiles()[0])
             return import_dialog.selectedFiles()[0]
 
     def parse_thermal_zones(self,path):
@@ -253,6 +325,11 @@ class MainWindow(QMainWindow):
                         zones.append(next.strip().split(",")[0])
 
             return zones
+    def license_clicked(self):
+        dlg = CustomDialog()
+        dlg.exec()
+        return
+
 
 
 app = QApplication(sys.argv)
