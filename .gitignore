@@ -3,6 +3,7 @@
 /dist/
 /src/
 /venv/
+/test/
 /.idea/
 /.ipynb_checkpoints/
 /__pycache__/

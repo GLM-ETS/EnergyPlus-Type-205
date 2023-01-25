@@ -40,7 +40,7 @@ class type205(EnergyPlusPlugin):
         self.current_zone_area = self.api.exchange.get_internal_variable_value(state, self.handles_zone_area)
 
         return 0
-    def on_inside_hvac_system_iteration_loop(self, state) -> int:
+    def on_after_predictor_before_hvac_managers(self, state) -> int:
         """
         Sets handles for inputs and outputs
         Calls the Type205 with specified LAI and CAC
