@@ -1,5 +1,4 @@
 # -*- mode: python ; coding: utf-8 -*-
-#TODO check numbers needed
 
 
 block_cipher = None
@@ -7,14 +6,14 @@ block_cipher = None
 
 a = Analysis(
     ['pyqt.py'],
-    pathex=['C:\\Users\\Gilbert\\PycharmProjects\\Doc_Art2'],
+    pathex=[],
     binaries=[],
-    datas=[('main.py','.'),('Type205.py','.')],
-    hiddenimports=['numbers'],
+    datas=[],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['pandas'],
+    excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -29,7 +28,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='CEA+ 0.4',
+    name='pyqt',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -42,4 +41,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['image.ico'],
 )
