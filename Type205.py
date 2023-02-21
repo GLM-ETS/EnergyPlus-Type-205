@@ -128,7 +128,7 @@ def Type205(self, state, T_a, RH, **kwargs):
     # Convert outputs units
     # -----------------------------------------------------------------------------------------------------------------------
 
-    q_sens = q_sens_watt * (A_gr * Afv)
-    q_lat = q_lat_watt / lmbda * (A_gr * Afv)
+    q_sens = q_sens_watt * (A_gr * Afv) #[W]
+    q_lat = q_lat_watt * (A_gr * Afv) #[W]
 
     return q_sens,q_lat,q_loss
