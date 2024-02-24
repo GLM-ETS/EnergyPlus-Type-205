@@ -1,6 +1,8 @@
 import sys, pickle, shutil, os
+
+import PyQt6.QtWidgets
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QPushButton, QLabel, QHBoxLayout, \
-    QVBoxLayout, QComboBox, QLineEdit, QSlider, QSpacerItem, QMessageBox, QStackedLayout, QDialog, QDialogButtonBox
+    QVBoxLayout, QComboBox, QLineEdit, QSlider, QSpacerItem, QMessageBox, QStackedLayout, QDialog, QDialogButtonBox, QSizePolicy
 from PyQt6.QtGui import QFont
 from addition import *
 from PyQt6.QtCore import Qt
@@ -32,11 +34,12 @@ class params(object):
     def __init__(self):
         super().__init__()
         self.LAI = 1
-        self.CAC = 1
-        self.Afv = 1
-        self.P_LED = 120
+        self.CA = 1
+        self.P_el = 120
         self.rho_v = 0.05
-        self.LED_eff = 0.52
+        self.f_v = 0.52
+        self.f_LW = 0.17
+        self.PPE = 3
         self.zone_name = ""
 
     def dump(self, folder_path):
@@ -61,12 +64,16 @@ class MainWindow(QMainWindow):
     def initUI(self):
 
         layout = QVBoxLayout()
-        layout2 = QHBoxLayout()
-        layout3 = QHBoxLayout()
+        layout15 = QHBoxLayout()
+        layout2 = QVBoxLayout()
+        layout3 = QVBoxLayout()
+        layout25 = QVBoxLayout()
+        layout35 = QVBoxLayout()
         layout4 = QHBoxLayout()
 
         w = []
         w2 = []
+        w25 = []
 
         lay_label = QHBoxLayout()
         label = QLabel("EnergyPlus CEA Generator",self)
@@ -111,49 +118,50 @@ class MainWindow(QMainWindow):
         w.append(lay_box)
         w.append(QSpacerItem(20, 20))
 
-        d = {}
-        names_dict = {"LAI" : {"slider_max":50},"CAC":{"slider_max":100}, "Afv":{"slider_max":10}}
+        names_dict = {"LAI": {"max": 50,"param":"LAI"},"Cultivated Area":{"max":100,"param":"CA"}, "rho_r": {"max": 10,"param":"rho_v"}}
 
         names = list(names_dict.keys())
 
 
         for x in range(1, len(names)+1):
             s = "layout_D{0}".format(x)
-            d[s] = QVBoxLayout()
+            butt = QLineEdit()
+            butt.textChanged.connect(self.selection_changed)
+            butt.setObjectName("field_" + names[x - 1])
+            butt.setFixedHeight(20)
+            butt.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
 
-            slider = QSlider(Qt.Orientation.Horizontal)
-            slider.setRange(0, names_dict[names[x-1]]["slider_max"])
-            slider.setValue(getattr(self.params,names[x-1]))
-            slider.setSingleStep(1)
-            slider.setTickPosition(QSlider.TickPosition.TicksBelow)
-            slider.setObjectName("slider_"+names[x - 1])
-            slider.valueChanged.connect(self.selection_changed)
-
-
-            lab = QLabel(names[x - 1] + " : " + str(getattr(self.params,names[x-1])))
-            lab.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            lab = QLabel(names[x - 1] + " : " + str(getattr(self.params,names_dict[names[x-1]]["param"])))
+            lab.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
             lab.setObjectName("label_"+names[x - 1])
+            lab.setFixedHeight(20)
+            lab.setFixedWidth(120)
 
-            d[s].addWidget(slider)
-            d[s].addWidget(lab)
-            w2.append(d[s])
+            layout2.addWidget(lab)
+            layout2.addSpacing(10)
+            layout25.addWidget(butt)
+            layout25.addSpacing(10)
 
         d_LED ={}
-        LED_dict = {"P_LED": {"max": 500}, "LED_eff": {"max": 100}, "rho_v": {"max": 10}}
+        LED_dict = {"P_el": {"max": 500}, "f_v": {"max": 1}, "f_LW": {"max": 1}, "PPE": {"max": 1}}
         LED_names = list(LED_dict.keys())
 
-        w3 = []
         for x in range(1, len(LED_names)+1):
             s = "layout_D{0}".format(x)
-            d[s] = QVBoxLayout()
+            lab = QLabel(LED_names[x - 1] +" : " +str(getattr(self.params,LED_names[x-1])))
+            lab.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
+            lab.setObjectName("label_" + LED_names[x - 1])
+            lab.setFixedHeight(20)
+            lab.setFixedWidth(120)
+            layout3.addWidget(lab)
+            layout3.addSpacing(10)
             button2 = QLineEdit()
+            button2.setFixedHeight(20)
             button2.textChanged.connect(self.selection_changed)
             button2.setObjectName("field_" + LED_names[x - 1])
-            d[s].addWidget(button2)
-            lab = QLabel(LED_names[x - 1] +" : " +str(getattr(self.params,LED_names[x-1])))
-            lab.setObjectName("label_" + LED_names[x - 1])
-            d[s].addWidget(lab)
-            w3.append(d[s])
+            button2.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
+            layout35.addWidget(button2)
+            layout35.addSpacing(10)
 
         button3 = QPushButton("Select Output Dir",self)
         button3.clicked.connect(lambda: self.select_output())
@@ -163,8 +171,11 @@ class MainWindow(QMainWindow):
         button4.clicked.connect(lambda: self.generate())
         layout4.addWidget(button4)
 
-        w.append(layout2)
-        w.append(layout3)
+        layout15.addLayout(layout2)
+        layout15.addLayout(layout25)
+        layout15.addLayout(layout3)
+        layout15.addLayout(layout35)
+        w.append(layout15)
         w.append(QSpacerItem(20, 20))
         w.append(layout4)
 
@@ -197,22 +208,10 @@ class MainWindow(QMainWindow):
             else:
                 layout.addWidget(item)
 
-        for item in w2:
-            if type(item) == QHBoxLayout or type(item) == QVBoxLayout:
-                layout2.addLayout(item)
-            else:
-                layout2.addWidget(item)
-
-        for item in w3:
-            if type(item) == QHBoxLayout or type(item) == QVBoxLayout:
-                layout3.addLayout(item)
-            else:
-                layout3.addWidget(item)
-
         widget = QWidget()
         widget.setLayout(layout)
 
-        self.options = self.set_options_widgets([layout2, layout3, layout4, self.box, label2])
+        self.options = self.set_options_widgets([layout2,layout25, layout3,layout35, layout4, self.box, label2])
         self.setCentralWidget(widget)
         self.options_hidden = True
         self.toggle_options()
@@ -227,12 +226,14 @@ class MainWindow(QMainWindow):
 
             shutil.copyfile(self.input_path,self.output_path+ "/" + "CEA_idf.idf")
             # Append initial file wit E+ objects
+            LL = self.params.P_el * self.params.CA
+
             with open(self.output_path+ "/" + "CEA_idf.idf","a") as f:
-                f.write(addition(self.params.zone_name))
+                f.write(addition(self.params.zone_name, self.params.f_v, self.params.f_LW, LL=LL))
 
             #Copy Python Files
-            shutil.copyfile(path + "/" + "Type205.py" , self.output_path + "/" + "Type205.py")
-            shutil.copyfile(path + "/" + "main.py",self.output_path + "/" + "main.py")
+            shutil.copyfile(path + "\\" + "Type205.py" , self.output_path + "/" + "Type205.py")
+            shutil.copyfile(path + "\\" + "main.py",self.output_path + "/" + "main.py")
 
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Done !")
@@ -290,9 +291,15 @@ class MainWindow(QMainWindow):
     def toggle_options(self):
         for w in self.options:
             if self.options_hidden:
-                w.hide()
+                try:
+                    w.hide()
+                except Exception:
+                    pass
             elif ~self.options_hidden:
-                w.show()
+                try:
+                    w.show()
+                except Exception:
+                    pass
         return
 
     def choose_idf(self):

@@ -1,12 +1,19 @@
 import math
-def Type205(self, state, T_a, RH, **kwargs):
-    P_LED = kwargs["P_LED"]  # Total LED Power [W]
+import scipy.optimize as opt
+def Type205(self, state, T_a, RH,lights, **kwargs):
+    P_LED = kwargs["P_el"] * lights  # Total LED Power [W]
     A_gr = kwargs["area"]  # Floor area [m^2]
     LAI = kwargs["LAI"]  # LeafAreaIndex [m^2_leaves/m^2_cultivated area]
-    CAC = kwargs["CAC"]  # Coverage of the floor of the cultivated area [-]
-    Afv = kwargs["Afv"]  # Cultivated fraction [-]
+    PPE = kwargs["PPE"]
+
+    if LAI > 2.45:
+        CAC = 0.95
+    elif LAI <= 2.45:
+        CAC = 0.3874 * LAI# Coverage of the floor of the cultivated area [-]
+
+    Afv = kwargs["CA"] / kwargs["area"]  # Cultivated fraction [-]
     rho_v = kwargs["rho_v"]   # Lettuce relfectivity [-]
-    LED_eff = kwargs["LED_eff"]  # LED efficiency [-]
+    LED_eff = kwargs["f_v"]  # LED efficiency [-]
 
     #  #Outputs
     # q_sens #Sensible gain to air from vegetation [kJ/hr]
@@ -87,7 +94,7 @@ def Type205(self, state, T_a, RH, **kwargs):
     #    *** PERFORM ALL THE CALCULATION HERE FOR THIS MODEL. ***
     # -----------------------------------------------------------------------------------------------------------------------
 
-    PPFD = P_LED * LED_eff * 5
+    PPFD = P_LED * PPE
     I_light = LED_eff * P_LED
     Rnet = (1 - rho_v) * I_light * CAC
     q_loss = (I_light - Rnet) * (A_gr * Afv) # [W]
@@ -106,19 +113,32 @@ def Type205(self, state, T_a, RH, **kwargs):
     res = 1  # To get in the loop (initial value)
     i=0
 
-    while (abs(res) > 0.00001) and i<1000:
+    def h(T_s):
         Xs = Xa_star + rho_a * 1000 * c_p / lmbda * epsilon * (T_s - T_a)
         q_lat_watt = LAI * lmbda * (Xs - Xa) / (r_s + r_a)  # W/m^2
-        q_sens_watt = Rnet - q_lat_watt
+        q_sens_watt = (LAI * rho_a * c_p * 1000) / r_a * (T_s - T_a)
+        return -Rnet + q_lat_watt + q_sens_watt
 
-        T_s_star = q_sens_watt * r_a / (LAI * rho_a * c_p  * 1000) +T_a
+    try:
+        while (abs(res) > 0.00001) and i<100:
+            Xs = Xa_star + rho_a * 1000 * c_p / lmbda * epsilon * (T_s - T_a)
+            q_lat_watt = LAI * lmbda * (Xs - Xa) / (r_s + r_a)  # W/m^2
+            q_sens_watt = Rnet - q_lat_watt
 
-        res = T_s_star - T_s
-        T_s = T_s_star
+            T_s_star = q_sens_watt * r_a / (LAI * rho_a * c_p  * 1000) +T_a
 
-        i+=1
+            res = T_s_star - T_s
+            T_s = T_s_star
 
-    if i>=1000:
+            i+=1
+
+        if i >= 100:
+            T_s = opt.brenth(h, 0, 50)
+            Xs = Xa_star + rho_a * 1000 * c_p / lmbda * epsilon * (T_s - T_a)
+            q_lat_watt = LAI * lmbda * (Xs - Xa) / (r_s + r_a)  # W/m^2
+            q_sens_watt = (LAI * rho_a * c_p * 1000) / r_a * (T_s - T_a)
+
+    except Exception:
         self.api.runtime.issue_severe(state, "CEA Solver Failed")
         raise
 
