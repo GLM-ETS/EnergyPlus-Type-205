@@ -11,7 +11,7 @@ def Type205(self, state, T_a, RH,lights, **kwargs):
     elif LAI <= 2.45:
         CAC = 0.3874 * LAI# Coverage of the floor of the cultivated area [-]
 
-    Afv = kwargs["CA"] / kwargs["area"]  # Cultivated fraction [-]
+    Afv = kwargs['Cultivated Area'] / kwargs["area"]  # Cultivated fraction [-]
     rho_v = kwargs["rho_v"]   # Lettuce relfectivity [-]
     LED_eff = kwargs["f_v"]  # LED efficiency [-]
 
