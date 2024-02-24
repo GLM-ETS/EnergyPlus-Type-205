@@ -2,8 +2,8 @@
 # Needed E+ objects to performs CEA simulation
 #
 
-def addition(zone_name):
-  s = """!###################################
+def addition(zone_name, f_v, f_LW, LL):
+    s = """!###################################
   
     Schedule:Constant ,
       AlwaysOn , !- Name
@@ -74,7 +74,40 @@ def addition(zone_name):
       VegTemp,     !- Python Plugin Variable Name
       Averaged,                !- Type of Data in Variable
       ZoneTimestep,            !- Update Frequency
-      C;                       !- Units"""
+      C;                       !- Units
+      
+    Output:Variable,
+      Lights,                  !- Key Value
+      Schedule Value,          !- Variable Name
+      timestep;                !- Reporting Frequency
+    
+    Schedule:Compact,
+      Lights,                  !- Name
+      OnOff,                   !- Schedule Type Limits Name
+      Through: 12/31,          !- Field 1
+      For: AllDays,            !- Field 2
+      Until: 04:00,            !- Field 3
+      0,                       !- Field 4
+      Until: 20:00,            !- Field 5
+      1,                       !- Field 6
+      Until: 24:00,            !- Field 7
+      0;                       !- Field 8
+    
+    Lights,
+      LEDs,                    !- Name
+      Thermal Zone 1,          !- Zone or ZoneList or Space or SpaceList Name
+      Lights,                  !- Schedule Name
+      LightingLevel,              !- Design Level Calculation Method
+      {LL},                        !- Lighting Level {{W}}
+      ,                  !- Watts per Zone Floor Area {{W/m2}}
+      ,                        !- Watts per Person {{W/person}}
+      ,                        !- Return Air Fraction
+      {f_LW},                    !- Fraction Radiant
+      {f_v},                     !- Fraction Visible
+      ,                        !- Fraction Replaceable
+      General,                 !- End-Use Subcategory
+      No;                      !- Return Air Fraction Calculated from Plenum Temperature
+          
+      """
 
-
-  return s.format(zone=zone_name)
+    return s.format(zone=zone_name, f_LW=f_LW, f_v=f_v, LL=LL)

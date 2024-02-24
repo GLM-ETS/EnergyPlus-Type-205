@@ -2,8 +2,15 @@
 /build/
 /dist/
 /src/
+/res/
 /venv/
 /test/
 /.idea/
 /.ipynb_checkpoints/
+/.ipynb/
+/.idf/
+/.pkl/
+/.spec/
 /__pycache__/
+/Models/
+/res/
