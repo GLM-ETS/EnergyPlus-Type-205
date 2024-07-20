@@ -118,7 +118,7 @@ class MainWindow(QMainWindow):
         w.append(lay_box)
         w.append(QSpacerItem(20, 20))
 
-        names_dict = {"LAI": {"max": 50,"param":"LAI"},"Cultivated Area":{"max":100,"param":"CA"}, "rho_r": {"max": 10,"param":"rho_v"}}
+        names_dict = {"LAI": {"max": 50,"param":"LAI"},"Cultivated Area (m<sup>2</sup>)":{"max":100,"param":"CA"}, "rho_r": {"max": 10,"param":"rho_v"}}
 
         names = list(names_dict.keys())
 
@@ -129,13 +129,14 @@ class MainWindow(QMainWindow):
             butt.textChanged.connect(self.selection_changed)
             butt.setObjectName("field_" + names[x - 1])
             butt.setFixedHeight(20)
+            butt.setFixedWidth(60)
             butt.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
 
             lab = QLabel(names[x - 1] + " : " + str(getattr(self.params,names_dict[names[x-1]]["param"])))
             lab.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
             lab.setObjectName("label_"+names[x - 1])
             lab.setFixedHeight(20)
-            lab.setFixedWidth(120)
+            lab.setFixedWidth(180)
 
             layout2.addWidget(lab)
             layout2.addSpacing(10)
@@ -143,20 +144,21 @@ class MainWindow(QMainWindow):
             layout25.addSpacing(10)
 
         d_LED ={}
-        LED_dict = {"P_el": {"max": 500}, "f_v": {"max": 1}, "f_LW": {"max": 1}, "PPE": {"max": 1}}
+        LED_dict = {"P_el (W·m<sup>-2</sup>)": {"max": 500, "param":"P_el"}, "f_v": {"max": 1,"param":"f_v"}, "f_LW": {"max": 1, "param":"f_LW"}, "PPE (μmol·J<sup>-1</sup>)": {"max": 1, "param":"PPE"}}
         LED_names = list(LED_dict.keys())
 
         for x in range(1, len(LED_names)+1):
             s = "layout_D{0}".format(x)
-            lab = QLabel(LED_names[x - 1] +" : " +str(getattr(self.params,LED_names[x-1])))
+            lab = QLabel(LED_names[x - 1] + " : " + str(getattr(self.params,LED_dict[LED_names[x-1]]["param"])))
             lab.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
             lab.setObjectName("label_" + LED_names[x - 1])
             lab.setFixedHeight(20)
-            lab.setFixedWidth(120)
+            lab.setFixedWidth(180)
             layout3.addWidget(lab)
             layout3.addSpacing(10)
             button2 = QLineEdit()
             button2.setFixedHeight(20)
+            button2.setFixedWidth(60)
             button2.textChanged.connect(self.selection_changed)
             button2.setObjectName("field_" + LED_names[x - 1])
             button2.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTop)
