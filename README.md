@@ -182,12 +182,13 @@ Gilbert Larochelle Martin - gilbert.larochelle-martin.1@ens.etsmtl.ca
 
 Project Link: [https://github.com/GLM-ETS/Doc_Art2](https://github.com/GLM-ETS/Doc_Art2)
 
+Please cite when using the model: Larochelle Martin, G., & Monfet, D. Toward Integrated Crop and Building Simulation for Controlled Environment Agriculture Using Energyplus. Energy Nexus.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-<!-- ACKNOWLEDGMENTS 
-## Acknowledgments
-
+<!-- 
+## Please cite when using the model : 
+Larochelle Martin, G., & Monfet, D. Toward Integrated Crop and Building Simulation for Controlled Environment Agriculture Using Energyplus. Energy Nexus. 
 * []()
 * []()
 * []()
