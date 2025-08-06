@@ -1,7 +1,7 @@
 import math
 import scipy.optimize as opt
 def Type205(self, state, T_a, RH,lights, **kwargs):
-    P_LED = kwargs["P_el"] * lights  # Total LED Power [W]
+    P_LED = kwargs["P_el"] * lights / kwargs["area"] # Total LED Power [W/m^2]
     A_gr = kwargs["area"]  # Floor area [m^2]
     LAI = kwargs["LAI"]  # LeafAreaIndex [m^2_leaves/m^2_cultivated area]
     PPE = kwargs["PPE"]
